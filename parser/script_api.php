@@ -1,10 +1,13 @@
 <?php
 
-require_once 'C:\Users\Ivan Novikov\PhpstormProjects\script\vendor\autoload.php';
+$autoload = realpath('../vendor/autoload.php');
+require_once $autoload;
 
 $host = 'localhost';
 $root = 'root';
 $dbname = 'testdb';
+
+$config_sheets = realpath('../credentials.json');
 
 $tables = ['Electronic', 'Print', 'Direct Mail', 'Fixed Internet', 'New Vehicles',
     'Used Vehicles', 'Used Vehicles - non Internet', 'Internet Total', 'PVR on Internet', 'Store Specific Other'];
@@ -12,8 +15,8 @@ $tables = ['Electronic', 'Print', 'Direct Mail', 'Fixed Internet', 'New Vehicles
 function createDb($host, $root, $dbname)
 {
     try {
-        $dbh = new PDO("mysql:host=$host", "$root");
-        $dbh->exec("CREATE DATABASE `$dbname`;");
+        $db = new PDO("mysql:host=$host", "$root");
+        $db->exec("CREATE DATABASE `$dbname`;");
     } catch (PDOException $e) {
     }
 }
@@ -34,13 +37,13 @@ function createTables($conn, $tables) {
     }
 }
 
-function connectionGoogle()
+function connectionGoogle($config)
 {
     $client = new Google\Client();
     $client->setApplicationName("My_Google_App");
     $client->setScopes([\Google\Service\Sheets::SPREADSHEETS]);
     $client->setAccessType('offline');
-    $client->setAuthConfig('C:\Users\Ivan Novikov\PhpstormProjects\script\credentials.json');
+    $client->setAuthConfig($config);
     $service = new Google_Service_Sheets($client);
     $spreadsheetId = "10En6qNTpYNeY_YFTWJ_3txXzvmOA7UxSCrKfKCFfaRw";
     $ranges = 'HVW!A4:N129';
@@ -134,7 +137,7 @@ function updateEntries($result, $tables, $conn, $k = 1) {
 }
 
 createTables($conn, $tables);
-$result = connectionGoogle();
+$result = connectionGoogle($config_sheets);
 insertEntries($result, $tables, getEntries($result, $tables), $conn);
 updateEntries($result, $tables, $conn);
 
