@@ -107,7 +107,7 @@ function insertEntries($result, $tables, $callback, $conn) {
     }
 }
 
-function updateEntries($result, $tables, $conn, $k = 1) {
+function updateEntries($result, $tables, $conn) {
     foreach ($result['valueRanges'][0]['values'] as $arr) {
         try {
             if ($arr[0] == 'Internet Total' || $arr[0] == 'PVR on Internet') {
