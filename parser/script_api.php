@@ -71,7 +71,7 @@ function getEntries($result, $tables, $entries = 0, $category_entries = array())
     return $category_entries;
 }
 
-function insertEntries($result, $tables, $callback, $conn, $i = 1) {
+function insertEntries($result, $tables, $callback, $conn) {
     foreach ($result['valueRanges'][0]['values'] as $arr) {
         try {
             if ($arr[0] == 'Internet Total' || $arr[0] == 'PVR on Internet') {
@@ -86,6 +86,7 @@ function insertEntries($result, $tables, $callback, $conn, $i = 1) {
         }
         if (in_array($arr[0], $tables) && isset($arr[0])) {
             $table_name = $arr[0];
+            $i = 1;
         } elseif ($arr[0] == 'CO-OP') {
             break;
         } elseif ($arr[0] == '') {
@@ -121,6 +122,7 @@ function updateEntries($result, $tables, $conn, $k = 1) {
         }
         if (in_array($arr[0], $tables) && isset($arr[0])) {
             $table_name = $arr[0];
+            $k = 1;
         } elseif ($arr[0] == 'CO-OP') {
             break;
         } elseif ($arr[0] == '') {
