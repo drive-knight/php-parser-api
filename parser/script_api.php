@@ -71,7 +71,7 @@ function getEntries($result, $tables, $entries = 0, $category_entries = array())
     return $category_entries;
 }
 
-function insertEntries($result, $tables, $callback, $conn) {
+function insertEntries($result, $tables, $callback, $conn, $emp = null) {
     foreach ($result['valueRanges'][0]['values'] as $arr) {
         try {
             if ($arr[0] == 'Internet Total' || $arr[0] == 'PVR on Internet') {
@@ -91,7 +91,17 @@ function insertEntries($result, $tables, $callback, $conn) {
             break;
         } elseif ($arr[0] == '') {
             continue;
-        } elseif ((($conn->query("SELECT COUNT(*) FROM `$table_name`")->fetchColumn()) == 0 ||
+        } elseif (count($arr) == 1 && !in_array($arr[0], $tables)) {
+            try {
+                $sql = "INSERT INTO `$table_name` (id, name, january, february, march, april, may, june, 
+                         july, august, september, october, november, december, total)
+            VALUES ($i, '$arr[0]', '$emp', '$emp', '$emp', '$emp', '$emp', '$emp',
+                    '$emp', '$emp', '$emp', '$emp', '$emp', '$emp', '$emp')";
+                $conn->exec($sql);
+                ++$i;
+            } catch (PDOException $e) {
+                ++$i;
+            }} elseif ((($conn->query("SELECT COUNT(*) FROM `$table_name`")->fetchColumn()) == 0 ||
             ($conn->query("SELECT COUNT(*) FROM `$table_name`")->fetchColumn() !== $callback["$table_name"])) && isset($arr[1])) {
             try {
                 $sql = "INSERT INTO `$table_name` (id, name, january, february, march, april, may, june, 
@@ -127,6 +137,16 @@ function updateEntries($result, $tables, $conn) {
             break;
         } elseif ($arr[0] == '') {
             continue;
+        } elseif (count($arr) == 1 && !in_array($arr[0], $tables)) {
+            for ($i = 1; $i < 15; $i++) {
+                $arr[$i] = $arr[$i] ?? null;
+            }
+            $sql = "UPDATE `$table_name` SET name = '$arr[0]' , january ='$arr[1]', february = '$arr[2]', march = '$arr[3]',
+                       april = '$arr[4]', may = '$arr[5]', june = '$arr[6]', july = '$arr[7]', august = '$arr[8]',
+                       september = '$arr[9]', october = '$arr[10]', november = '$arr[11]',
+                       december = '$arr[12]', total = '$arr[13]' WHERE id = $k";
+            $conn->exec($sql);
+            ++$k;
         } elseif (($conn->query("SELECT COUNT(*) FROM `$table_name`")->fetchColumn()) !== 0 && isset($arr[1])) {
             $sql = "UPDATE `$table_name` SET name = '$arr[0]', january ='$arr[1]', february = '$arr[2]', march = '$arr[3]',
                        april = '$arr[4]', may = '$arr[5]', june = '$arr[6]', july = '$arr[7]', august = '$arr[8]',
@@ -142,4 +162,3 @@ createTables($conn, $tables);
 $result = connectionGoogle($config_sheets);
 insertEntries($result, $tables, getEntries($result, $tables), $conn);
 updateEntries($result, $tables, $conn);
-
